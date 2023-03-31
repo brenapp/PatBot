@@ -28,6 +28,11 @@ export default async function respond(client: Client, message: Message) {
       text = choice.text;
     }
 
+    // If the text contains a < but not a >, then close it
+    if (text.includes("<") && !text.includes(">")) {
+      text += ">";
+    }
+
     message.reply(text);
   }
 }

@@ -40,15 +40,14 @@ client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (message.channelId != channelId) return;
 
-  // console.log(message.content);
-
-  // if (message.mentions.users.has(client.user!.id)) {
-  //   respond(client, message)
-  // } else if (Math.random() < 0.20) {
-  //   respond(client, message)
-  // }
-
-  respond(client, message);
+  if (
+    message.mentions.users.has(client.user!.id) ||
+    message.content.toLowerCase().includes("pat")
+  ) {
+    respond(client, message);
+  } else if (Math.random() < 0.05) {
+    respond(client, message);
+  }
 });
 
 client.on("interactionCreate", handleCommand);
