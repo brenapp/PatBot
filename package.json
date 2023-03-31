@@ -1,5 +1,5 @@
 {
-  "name": "liquid",
+  "name": "patbot",
   "version": "0.0.0",
   "description": "A discord bot template, with default support for slash commands",
   "main": "out/bot/main.js",
@@ -15,19 +15,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MayorMonty/liquid.git"
+    "url": "git+https://github.com/MayorMonty/patbot.git"
   },
   "author": "Brendan McGuire <brendan@bren.app>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MayorMonty/liquid/issues"
+    "url": "https://github.com/MayorMonty/patbot/issues"
   },
-  "homepage": "https://github.com/MayorMonty/liquid#readme",
+  "homepage": "https://github.com/MayorMonty/patbot#readme",
   "dependencies": {
     "@discordjs/builders": "^0.13.0",
     "@discordjs/rest": "^0.4.1",
     "discord-api-types": "^0.33.1",
-    "discord.js": "^13.7.0"
+    "discord.js": "^13.7.0",
+    "openai": "^3.2.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
