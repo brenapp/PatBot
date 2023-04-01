@@ -33,6 +33,10 @@ export default async function respond(client: Client, message: Message) {
       text += ">";
     }
 
-    message.reply(text);
+    try {
+      message.reply(text);
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
