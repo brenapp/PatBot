@@ -42,6 +42,14 @@ export default async function respond(client: Client, message: Message) {
       return match;
     });
 
+    text = text.replace(/\<:([a-z0-9_]+):.+\>/g, (match, name) => {
+      const emoji = client.emojis.cache.find((emoji) =>
+        emoji.name!.includes(name.toLowerCase())
+      );
+      if (emoji) return emoji.toString();
+      return match;
+    });
+
     try {
       message.reply(text);
     } catch (e) {
