@@ -1,4 +1,4 @@
-import { Client, Intents } from "discord.js";
+import { Client, Intents, TextChannel } from "discord.js";
 import {
   COMMANDS,
   deployApplicationCommands,
@@ -9,16 +9,21 @@ import {
   token as DISCORD_TOKEN,
   developmentGuild,
   channel as channelId,
+  owner,
 } from "~secret/discord.json";
 import log from "./lib/log";
 
 // Register all of the commands
 import "./commands";
 import respond from "behaviors/respond";
-import { collect } from "behaviors/collect";
 
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.DIRECT_MESSAGES,
+  ],
+  partials: ["CHANNEL"],
 });
 
 client.on("ready", () => {
