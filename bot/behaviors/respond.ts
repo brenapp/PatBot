@@ -34,7 +34,7 @@ export default async function respond(client: Client, message: Message) {
     }
 
     // Replace all instances of :text: with the appropriate emoji
-    text = text.replace(/:([a-z0-9_]+):/g, (match, name) => {
+    text = text.replace(/\<?:([a-z0-9_]+):\>?/g, (match, name) => {
       const emoji = client.emojis.cache.find((emoji) =>
         emoji.name!.includes(name.toLowerCase())
       );
