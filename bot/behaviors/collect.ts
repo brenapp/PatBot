@@ -12,48 +12,66 @@ export async function collect(client: Client, userId: string) {
   const channel = (await guild.channels.fetch(channelId)) as TextChannel;
 
   // Get user's messages in that channel
-  let before = undefined;
-  let messages: { prompt: string; completion: string }[] = [];
-  let totalWrites = 0;
+  let messages: { message: Message; chain: Message[] }[] = [];
 
   console.log(
-    `Collect messages from ${user.username}#${user.discriminator} in ${channel.name}`
+    `Collect messages from ${user.username}#${user.discriminator} in #${channel.name}`
   );
 
-  while (true) {
-    const fetched: Collection<string, Message> = await channel.messages.fetch({
+  const file = JSON.parse(await fs.readFile(`./${user.username}.json`, "utf8"));
+
+  let before: string | undefined = undefined;
+  if (file.before) {
+    before = file.before;
+  }
+
+  messages = file.messages;
+
+  let message = await channel.messages
+    .fetch({ limit: 1, before })
+    .then((messagePage) => (messagePage.size === 1 ? messagePage.at(0) : null));
+
+  while (message) {
+    const batch = await channel.messages.fetch({
       limit: 100,
-      before,
+      before: message.id,
     });
-    console.log("Fetched", fetched.lastKey(), messages.length);
-    if (fetched.size == 0) break;
 
-    // Progressively write out messages
-    if (totalWrites++ % 10 == 0) {
-      const filename = `./${user.username.replace(/[^a-zA-Z0-9]/g, "")}${
-        user.discriminator
-      }.json`;
-      await fs.writeFile(filename, JSON.stringify(messages, null, 2));
-      console.log("Wrote", messages.length, "messages to", filename);
-    }
-
-    before = fetched.lastKey();
-    const fetchedMessages = fetched.filter(
-      (m) => m.author.id == userId && !!m.reference?.messageId
+    console.log(
+      `Fetched ${batch.size} messages from ${message.id} to ${
+        batch.at(batch.size - 1)!.id
+      } [${messages.length} PAT messages]`
     );
 
-    for (const [key, message] of fetchedMessages) {
-      const repliedMessage = await channel.messages.cache.get(
-        message.reference?.messageId!
-      );
-      if (!repliedMessage) {
-        continue;
-      }
+    for (const [id, msg] of batch) {
+      if (msg.author.id !== userId) continue;
+      if (msg.type !== "REPLY") continue;
 
-      messages.push({
-        prompt: repliedMessage.content,
-        completion: message.content,
-      });
+      let chain = [];
+      let prev = msg;
+
+      try {
+        while (prev.reference) {
+          const prevMsg = await prev.fetchReference();
+          chain.push(prevMsg);
+          prev = prevMsg;
+        }
+        if (chain.length > 0) {
+          messages.push({ message: msg, chain });
+        }
+      } catch (e) {
+        console.error(`Failed to fetch message ${prev.id}`);
+        console.error(e);
+      }
     }
+
+    console.log(`Saving ${messages.length} messages...`);
+    await fs.writeFile(
+      `./${user.username}.json`,
+      JSON.stringify({ messages, before: message.id }, null, 2),
+      "utf8"
+    );
+
+    message = 0 < batch.size ? batch.at(batch.size - 1) : null;
   }
 }
