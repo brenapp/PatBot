@@ -41,6 +41,7 @@ export default async function respond(client: Client, message: Message) {
   ];
 
   let collectMessages = performance.now();
+  console.log(`Collect messages: ${collectMessages - start}ms`);
 
   message.channel.sendTyping();
 
@@ -51,13 +52,38 @@ export default async function respond(client: Client, message: Message) {
 
   let complete = performance.now();
 
-  console.log(`Collect messages: ${collectMessages - start}ms`);
   console.log(`OpenAI: ${complete - collectMessages}ms`);
   console.log(`Complete: ${complete - collectMessages}ms`);
+
+  console.log(messages, completion.data.choices);
 
   // Remove everything after END
   for (const choice of completion.data.choices) {
     if (!choice.message) continue;
-    message.reply(choice.message);
+
+    // Split message into groups of at most 2000 characters
+    const split = choice.message.content.split(" ");
+    const groups = [];
+
+    let group = "";
+    for (const word of split) {
+      if (group.length + word.length + 1 > 2000) {
+        groups.push(group);
+        group = "";
+      }
+      group += `${word} `;
+    }
+
+    groups.push(group);
+
+    for (const group of groups) {
+      if (group.length > 0) {
+        try {
+          await message.reply(group);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
   }
 }
