@@ -43,7 +43,12 @@ client.on("ready", () => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  if (message.channelId != channelId) return;
+
+  const validChannel =
+    message.channelId === channelId ||
+    (message.channel.type === "DM" && message.author.id === owner);
+
+  if (!validChannel) return;
 
   if (
     message.mentions.users.has(client.user!.id) ||
